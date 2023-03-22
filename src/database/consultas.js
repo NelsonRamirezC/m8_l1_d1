@@ -43,3 +43,8 @@ export const deleteUsuariosById = async (id) => {
     let usuario = await pool.query("DELETE FROM usuarios WHERE id =$1 RETURNING id, nombre, email, imagen ", [id]);
     return usuario.rows;
 }
+
+export const usuarioLogin = async (email, password) => {
+    let usuario = await pool.query("select id, nombre, email, imagen from usuarios where email =$1 AND password = $2", [email, password]);
+    return usuario.rows;
+}

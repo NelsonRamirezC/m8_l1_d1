@@ -1,8 +1,10 @@
 import express from 'express';
-import { getUsuarios, getUsuariosById, addUsuario, updateUsuario, deleteUsuariosById} from './database/consultas.js' 
-
+import jwt from 'jsonwebtoken';
+import { getUsuarios, getUsuariosById, addUsuario, updateUsuario, deleteUsuariosById, usuarioLogin} from './database/consultas.js' 
 
 const app = express();
+
+let secreto = "1234567";
 
 
 //MIDDLEWARE
@@ -55,8 +57,23 @@ app.put("/usuarios", (req, res) => {
    })
 })
 
+
+const validar = (req, res, next) =>{
+    let token = req.query.token;
+    if(token){
+        jwt.verify(token, secreto, (err, decoded) => {
+            if(err) return res.status(403).json({code: 401, error: "Usted no tiene los permisos necesarios para eliminar / token invalido."})
+           console.log(decoded);
+            next()
+          });
+    }else{
+        return res.status(401).json({code: 401, error: "Debe proporcionar un token, debe autenticarse"})
+    }
+}
+
+
 //RUTA DELETE USUARIO
-app.delete("/usuarios/:id", (req, res) => {
+app.delete("/usuarios/:id", validar, (req, res) => {
     let id = req.params.id;
     deleteUsuariosById(id).then(usuario => {
         if(usuario.length == 0) return res.status(400).json({code: 400, error: "Ha intentado eliminar un usuario con un id desconocido"})
@@ -67,6 +84,20 @@ app.delete("/usuarios/:id", (req, res) => {
     })
 })
 
+
+//RUTA DE LOGIN
+//rutas POR USUARIO
+app.post("/usuarios/login", (req, res) => {
+    let {email, password} = req.body;
+    usuarioLogin(email, password).then(usuario => {
+        if(usuario.length == 0) return res.status(400).json({code: 400, error: "Error en el login"})
+        let token = jwt.sign(usuario[0], secreto);
+       res.status(200).json({code: 200, token})
+   }).catch(error => {
+       console.log(error)
+       res.status(500).json({code: 500, error: "No se pudo realizar el token."})
+   })
+})
 
 
 
