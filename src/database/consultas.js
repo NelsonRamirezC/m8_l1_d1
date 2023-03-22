@@ -48,3 +48,22 @@ export const usuarioLogin = async (email, password) => {
     let usuario = await pool.query("select id, nombre, email, imagen from usuarios where email =$1 AND password = $2", [email, password]);
     return usuario.rows;
 }
+
+export const getProductos = async () => {
+    let productos = await pool.query("select * from productos");
+    return productos.rows;
+}
+
+export const getProductosPorId = async (id) => {
+    let producto = await pool.query("select * from productos where id = $1", [id]);
+    return producto.rows;
+}
+
+
+export const addProducto= async (nombre, descripcion, precio, stock, imagen) => {
+    let query =`
+        INSERT INTO productos(nombre, descripcion, precio, stock, imagen)
+        values($1, $2, $3, $4, $5) RETURNING *`    
+    let producto = await pool.query(query, [nombre, descripcion, precio, stock, imagen]);
+    return producto.rows;
+}
