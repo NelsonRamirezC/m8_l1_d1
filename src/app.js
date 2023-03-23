@@ -81,7 +81,7 @@ const validar = (req, res, next) =>{
     if(token){
         jwt.verify(token, secreto, (err, decoded) => {
             if(err) return res.status(403).json({code: 401, error: "Usted no tiene los permisos necesarios para eliminar / token invalido."})
-           console.log(decoded);
+           req.usuario = decoded;
             next()
           });
     }else{
@@ -93,6 +93,7 @@ const validar = (req, res, next) =>{
 //RUTA DELETE USUARIO
 app.delete("/usuarios/:id", validar, (req, res) => {
     let id = req.params.id;
+
     deleteUsuariosById(id).then(usuario => {
         if(usuario.length == 0) return res.status(400).json({code: 400, error: "Ha intentado eliminar un usuario con un id desconocido"})
         res.status(200).json({code: 200, data: usuario})
@@ -179,8 +180,15 @@ app.post("/productos", async (req, res) => {
 })
 
 app.get("/imagenes/:imagen", (req, res) => {
-    let nombreImagen = req.params.imagen;
-    res.sendFile(__dirname+"/public/"+nombreImagen);
+    try {
+        let nombreImagen = req.params.imagen;
+        if(nombreImagen == "null"){
+            return res.sendFile(__dirname+"/public/not_found.png");
+        }
+        res.sendFile(__dirname+"/public/"+nombreImagen);
+    } catch (error) {
+        res.sendFile(__dirname+"/public/not_found.png");
+    }
 })
 
 

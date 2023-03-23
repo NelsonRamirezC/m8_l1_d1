@@ -27,7 +27,7 @@
         </section>
 
         <section>
-            <form action="http://localhost:3000/productos" method="POST" enctype="multipart/form-data" target="_blank">
+            <form id="formAddProducto"  enctype="multipart/form-data">
                 nombre: <input class="form-control" type="text" name="nombre" id="nombre">
                 descripción: <input class="form-control" type="text" name="descripcion" id="descripcion">
                 precio: <input class="form-control" type="number" name="precio" id="precio">
@@ -65,11 +65,46 @@
             cargarDatosTabla(productos.data)
         })
 
+
+        //lógica para crear un producto
+        let formulario = document.getElementById("formAddProducto");
+
+        formulario.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            let requestOptions = {
+                method: 'POST',
+                body: new FormData(formulario),
+                redirect: 'no-follow'
+            };
+
+            fetch("http://localhost:3000/productos", requestOptions)
+            .then(response => {
+                if(response.status == 413){
+                    return response.text()
+                }
+                return response.json()
+            })
+            .then(result => {
+                if(result.code == 201){
+                    alert(result.message)
+                }else if(result.code == 500){
+                    alert(result.error)
+                }else{
+                    alert(result)
+                }
+            })
+            .catch(error => {
+                alert("No se pudo hacer la solicitud para enviar el formulario.")
+            });
+    
+        });
+            
     </script>
 
     <style>
         tbody img{
-            width: 200px;
+            width: 100px;
         }
     </style>
 </body>
